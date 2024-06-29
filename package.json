@@ -1,0 +1,26 @@
+{
+  
+  "dependencies": {
+  
+    
+  "ethers": "^6.13.1",
+  
+    
+  "solc": "^0.8.26"
+  
+  },
+  
+  "scripts": {
+  
+    
+  "compile": "solcjs --bin --abi  --include-path node_modules/ --base-path . day2/SimpleStorage.sol"
+  
+  },
+  
+  "devDependencies": {
+  
+    
+  "hardhat": "^2.22.5"
+  
+  }
+}
