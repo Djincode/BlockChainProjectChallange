@@ -1,0 +1,42 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\n// solhint-disable-next-line interface-starts-with-i\ninterface AggregatorV3Interface {\n  function decimals() external view returns (uint8);\n\n  function description() external view returns (string memory);\n\n  function version() external view returns (uint256);\n\n  function getRoundData(\n    uint80 _roundId\n  ) external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);\n\n  function latestRoundData()\n    external\n    view\n    returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);\n}\n"
+    },
+    "contracts/FundMe.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0; \n\n//get funds from users;\n//withdraw funds;\n//set a minimum fund/withdraw limit in usd\n\n\nimport './PriceConverter.sol';\n\ncontract FundMe {\n\n       using PriceConverter for uint256;\n\nuint256 public minimumUsd = 50*1e18;\naddress[] public funders;\nmapping(address=>uint256) public addressToAmountFunded;\naddress public owner;\nAggregatorV3Interface public dataFeed;\n\n  constructor(address dataFeedAddress) {\n        dataFeed = AggregatorV3Interface(dataFeedAddress) ;\n        owner = msg.sender;\n    }\n\n\n\nfunction fund() public payable {\nuint256 minimumEth = minimumUsd / PriceConverter.getPrice(dataFeed);\nrequire(msg.value > minimumEth,\"Did not sent enough!\"); // minimum limiti teyin edir,msg.value gonderilen coinin deyeridi\nfunders.push(msg.sender);\naddressToAmountFunded[msg.sender] += msg.value;\n}\n\n\n\n\n\nfunction withdraw() public  onlyOwner {\n  for(uint256 funderIndex=0; funderIndex < funders.length; funderIndex++){\n    address funder = funders[funderIndex];\n    addressToAmountFunded[funder] = 0;\n  }\n\n  funders = new address[](0);\n\n  //withdraw elemeyin 3 yolu var:\n  //transfer:\n//   payable(msg.sender).transfer(address(this).balance);\n\n  //send :\n//   bool sendSuccess = payable(msg.sender).send(address(this).balance);\n//   require(sendSuccess, \"Failed\"); \n\n  //call: (en serfelisi budu ve bunnan istifade edeceyik)\n\n  (bool sendSucess,)=payable(msg.sender).call{value: address(this).balance}(\"\") ;\n  require(sendSucess, \"Call failed\");\n\n  \n}\n modifier onlyOwner() {\n        require(msg.sender == owner, \"Only the owner can call this function\");\n        _;\n    }\n}"
+    },
+    "contracts/PriceConverter.sol": {
+      "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\nimport {AggregatorV3Interface} from \"@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol\";\r\n\r\nlibrary PriceConverter {\r\n \r\n \r\nfunction getPrice(AggregatorV3Interface dataFeed) internal  view  returns (uint256) {\r\n    \r\n   (,int answer,,,) = dataFeed.latestRoundData();\r\n   return uint256 (answer * 1e10);\r\n}\r\n\r\n// function getVersion () internal  view  returns(uint256) {\r\n//     AggregatorV3Interface dataFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);\r\n//      return dataFeed.version();\r\n// }\r\n\r\nfunction getConversationRate(uint256 ethAmount, AggregatorV3Interface dataFeed ) internal  view returns(uint256){\r\nuint256 ethPrice = getPrice(dataFeed);\r\nuint256 AmountInUsd = (ethPrice * ethAmount)/1e18;\r\nreturn AmountInUsd;\r\n}\r\n\r\n}"
+    }
+  },
+  "settings": {
+    "evmVersion": "paris",
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "devdoc",
+          "userdoc",
+          "storageLayout",
+          "evm.gasEstimates"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
+}
