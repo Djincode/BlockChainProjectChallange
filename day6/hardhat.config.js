@@ -5,7 +5,8 @@ require("hardhat-gas-reporter");
 require("@nomicfoundation/hardhat-verify");
 require("@nomicfoundation/hardhat-ethers");
 require("solidity-coverage");
-require("@nomiclabs/hardhat-ethers")
+require("@nomiclabs/hardhat-ethers");
+
 
 /** @type import('hardhat/config').HardhatUserConfig */
 
